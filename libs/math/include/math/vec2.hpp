@@ -7,7 +7,6 @@ struct Vec2 {
 
     double x;
     double z;
-    // Memeber initializer list - a better, one-liner constructor
     Vec2(double x, double z) : x(x), z(z) {}
     // + Overloading - Vec2 + Vec2 (summing their respective x and z components)
     // const means "this method doesn't modify the object it's called on."
