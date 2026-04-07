@@ -4,6 +4,7 @@
 #include <cassert>
 #include <sim/quadrotor_model.hpp>
 #include <sim/sim_clock.hpp>
+#include <control/pid.hpp>
 
 int main (){
 
@@ -15,6 +16,9 @@ int main (){
     assert(b.norm() == 5.0);
     Vec2 n = a.normalized();
     assert(std::abs(n.norm() - 1.0) < 1e-9);
+
+    std::cout << "QUADROTOR TESTS" << '\n';
+
 
     // Quadrotor
     QuadrotorModel model(1.5, 0.25, 0.1);
@@ -42,6 +46,25 @@ int main (){
     std::cout << "After unequal thrust:" << std::endl;
     std::cout << "Position: " << model2.position.x << ", " << model2.position.z << std::endl;
     std::cout << "Pitch: " << model2.pitch << std::endl;
+
+    PIDController pid(0.5, 0.05, 1.5);
+
+    std::cout << "PID CONTROLLER TESTS" << '\n';
+
+    double position = 10.0;
+    double target = 0.0;
+    double velocity = 0.0;
+    double dt = 0.01;
+
+    for (int i = 0; i < 500; i++) {
+        double error = target - position;
+        double acceleration = pid.compute(error, dt);
+        velocity += acceleration * dt;
+        position += velocity * dt;
+        if (i % 50 == 0) {
+            std::cout << "t=" << i * dt << " pos=" << position << std::endl;
+        }
+    }
 
     return 0;
 }

@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(libs/math)
 add_subdirectory(sim)
+add_subdirectory(control)
 
 add_executable(test_math tests/math.cpp)
-target_link_libraries(test_math PRIVATE math_lib sim)
+target_link_libraries(test_math PRIVATE math_lib sim control)
