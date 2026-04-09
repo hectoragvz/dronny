@@ -27,7 +27,7 @@ A PID controller. `compute(error, dt)` returns a control signal using the standa
 
 The return value is a dimensionless correction — its physical meaning (acceleration, force, thrust differential) is determined by how the caller uses it.
 
-### `sim/include/sim/sim_clock.hpp`
+### `sim/include/sim/sensors.hpp`
 A simulation of both a barometer and a gyroscope to add noise and randomnmess to position lectures.
 
 ### `apps/sim_main.cpp`
