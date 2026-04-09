@@ -3,6 +3,7 @@
 #include <cassert>
 #include <sim/quadrotor_model.hpp>
 #include <sim/sim_clock.hpp>
+#include <sim/sensors.hpp>
 #include <control/pid.hpp>
 
 int main() {
@@ -52,17 +53,22 @@ int main() {
     std::cout << "##### PID AND MODEL TESTS #####" << '\n';
 
     QuadrotorModel model3(1.5, 0.25, 0.1);
-    model3.pitch = 0.3;
+    model3.pitch = 0.0;
     double target_alt = 10.0;
     double target_pitch = 0.0; //staying level
     double dt2 = 0.001;
     // PID Controllers
     PIDController altPid(5.0, 0.1, 4.0);
     PIDController pitchPid(0.5, 0.0, 0.3);
+
+    // Simulating sensors
+    Barometer baro(0.5);
+    Gyroscope gyro(0.01, 0.0001);
+
     for (int i = 0; i < 10000; i++){
         // Computing errors
-        double alt_err = target_alt - model3.position.z;
-        double pitch_err = target_pitch - model3.pitch;
+        double alt_err = target_alt - baro.read(model3.position.z);
+        double pitch_err = target_pitch - gyro.read(model3.pitch);
         // Errors to Controllers
         double total_thrust = model3.mass * (model3.gravity + altPid.compute(alt_err , dt2));
         double thrust_diff = pitchPid.compute(pitch_err, dt2);
@@ -70,9 +76,9 @@ int main() {
         double T2 = (total_thrust + thrust_diff) / 2.0;
         model3.step(dt2, T1, T2);
         if (i % 1000 == 0) {
-                std::cout << "Time=" << i * dt2
-                            << " Alt=" << model3.position.z
-                            << " Pitch=" << model3.pitch << std::endl
+                std::cout << "Time= " << i * dt2
+                            << " Alt= " << model3.position.z
+                            << " Pitch= " << model3.pitch
                             << " x Position= " << model3.position.x << std::endl;
             }
 
