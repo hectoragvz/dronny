@@ -28,10 +28,17 @@ A PID controller. `compute(error, dt)` returns a control signal using the standa
 The return value is a dimensionless correction — its physical meaning (acceleration, force, thrust differential) is determined by how the caller uses it.
 
 ### `sim/include/sim/sensors.hpp`
-A simulation of both a barometer and a gyroscope to add noise and randomnmess to position lectures.
+A simulation of both a barometer and a gyroscope to add noise and randomness to sensor readings. The barometer adds Gaussian noise to altitude readings. The gyroscope adds Gaussian noise plus a small random drift to pitch readings.
+
+### `estimation/include/estimation/ekf.hpp`
+A scalar (1D) Kalman Filter that estimates altitude. Alternates between two steps:
+- **Predict** — uses vertical acceleration and `dt` to project the state forward; uncertainty grows by `Q` (process noise)
+- **Update** — incorporates a barometer measurement; computes Kalman gain `K = P / (P + R)` to blend prediction and measurement, then shrinks uncertainty
+
+Key variables: `state_variable` (X) is the altitude estimate, `state_covariance` (P) is confidence in that estimate, `process_noise` (Q) is unmodeled physics uncertainty, and `measurement_noise` (R) is distrust of the barometer.
 
 ### `apps/sim_main.cpp`
 Three simulation scenarios:
 1. **Hover** — equal thrust on both motors, verifies the drone stays stationary.
 2. **Unequal thrust** — fixed asymmetric thrust, drone pitches and drifts.
-3. **PID control** — two PID controllers (altitude and pitch) compute T1 and T2 each timestep. Total thrust and thrust differential are solved as a system of two equations to simultaneously satisfy altitude and pitch targets.
+3. **PID + EKF control** — two PID controllers (altitude and pitch) compute T1 and T2 each timestep. A Kalman Filter fuses barometer readings with a vertical acceleration model to produce a smoothed altitude estimate, which feeds the altitude PID. Total thrust and thrust differential are solved as a system of two equations to simultaneously satisfy altitude and pitch targets.

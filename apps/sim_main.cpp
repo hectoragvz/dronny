@@ -5,6 +5,7 @@
 #include <sim/sim_clock.hpp>
 #include <sim/sensors.hpp>
 #include <control/pid.hpp>
+#include <estimation/ekf.hpp>
 
 int main() {
     std::cout << "QUADROTOR TESTS" << '\n';
@@ -53,6 +54,7 @@ int main() {
     std::cout << "##### PID AND MODEL TESTS #####" << '\n';
 
     QuadrotorModel model3(1.5, 0.25, 0.1);
+    KalmanFilter ekf;
     model3.pitch = 0.0;
     double target_alt = 10.0;
     double target_pitch = 0.0; //staying level
@@ -64,10 +66,13 @@ int main() {
     // Simulating sensors
     Barometer baro(0.5);
     Gyroscope gyro(0.01, 0.0001);
+    double vertical_acceleration = 0.0;
 
     for (int i = 0; i < 10000; i++){
         // Computing errors
-        double alt_err = target_alt - baro.read(model3.position.z);
+        ekf.predict(vertical_acceleration, dt2);
+        ekf.update(baro.read(model3.position.z));
+        double alt_err = target_alt - ekf.state_variable;
         double pitch_err = target_pitch - gyro.read(model3.pitch);
         // Errors to Controllers
         double total_thrust = model3.mass * (model3.gravity + altPid.compute(alt_err , dt2));
